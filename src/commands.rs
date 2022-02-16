@@ -1,14 +1,14 @@
 #[derive(Debug)]
 pub enum ArgsError {
     UnknownArg(String),
-    WrongUsage(String)
+    WrongUsage(String),
 }
 
 impl std::fmt::Display for ArgsError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::UnknownArg(e) => write!(f, "Unknown command line argument `{}`", e),
-            Self::WrongUsage(e) => write!(f, "Wrong usage: {}", e)
+            Self::WrongUsage(e) => write!(f, "Wrong usage: {}", e),
         }
     }
 }
@@ -18,12 +18,15 @@ pub enum Command {
     Help,
     HomePage(String),
     BlogDir(String),
+    HomeRoute(String),
+    BlogRoute(String),
+    BlogIndex(String),
 }
 
 #[derive(Debug)]
 struct PreparsedCommand {
     name: String,
-    value: Option<String>
+    value: Option<String>,
 }
 
 impl PreparsedCommand {
@@ -38,13 +41,13 @@ impl PreparsedCommand {
             let (first, second) = input.split_at(input.find("=").unwrap());
             return Self {
                 name: first.to_string(),
-                value: Some(second[1..].to_string())
-            }
+                value: Some(second[1..].to_string()),
+            };
         } else {
             return Self {
                 name: input.to_string(),
-                value: None
-            }
+                value: None,
+            };
         }
     }
 
@@ -61,30 +64,65 @@ pub fn parse_args(input: &Vec<String>) -> crate::error::BlogrsResult<Vec<Command
         if each.starts_with("-") {
             preparsed.push(PreparsedCommand::new(&each))
         } else {
-            return Err(ArgsError::UnknownArg(each.clone()).into())
+            return Err(ArgsError::UnknownArg(each.clone()).into());
         }
     }
 
     for command in preparsed {
         match command.name.as_str() {
-            "help" | "h" => {
-                ret.push(Command::Help)
-            }
+            "help" | "h" => ret.push(Command::Help),
             "home_page" => {
                 if command.has_value() {
                     ret.push(Command::HomePage(command.value.unwrap().clone()))
                 } else {
-                    return Err(ArgsError::WrongUsage(format!("--home_page takes an arguemnt, none were provided.")).into())
+                    return Err(ArgsError::WrongUsage(format!(
+                        "--home_page takes an arguemnt, none were provided."
+                    ))
+                    .into());
                 }
             }
             "blog_dir" => {
                 if command.has_value() {
                     ret.push(Command::BlogDir(command.value.unwrap().clone()))
                 } else {
-                    return Err(ArgsError::WrongUsage(format!("--blog_dir takes an arguemnt, none were provided.")).into())
+                    return Err(ArgsError::WrongUsage(format!(
+                        "--blog_dir takes an arguemnt, none were provided."
+                    ))
+                    .into());
                 }
             }
-            _ => return Err(ArgsError::UnknownArg(command.name.clone()).into())
+
+            "home_route" => {
+                if command.has_value() {
+                    ret.push(Command::HomeRoute(command.value.unwrap().clone()))
+                } else {
+                    return Err(ArgsError::WrongUsage(format!(
+                        "--home_route takes an argument, none were provided."
+                    ))
+                    .into());
+                }
+            }
+            "blog_route" => {
+                if command.has_value() {
+                    ret.push(Command::BlogRoute(command.value.unwrap().clone()))
+                } else {
+                    return Err(ArgsError::WrongUsage(format!(
+                        "--blog_route takes an argument, none were provided."
+                    ))
+                    .into());
+                }
+            }
+            "blog_index" => {
+                if command.has_value() {
+                    ret.push(Command::BlogIndex(command.value.unwrap().clone()))
+                } else {
+                    return Err(ArgsError::WrongUsage(format!(
+                        "--blog_index takes an argument, none were provided."
+                    ))
+                    .into());
+                }
+            }
+            _ => return Err(ArgsError::UnknownArg(command.name.clone()).into()),
         }
     }
 

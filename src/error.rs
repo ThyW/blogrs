@@ -3,7 +3,7 @@ pub enum Error {
     Custom(String),
     Io(std::io::Error),
     Rocket(rocket::error::Error),
-    ArgParse(crate::commands::ArgsError)
+    ArgParse(crate::commands::ArgsError),
 }
 
 impl std::fmt::Display for Error {
@@ -12,7 +12,7 @@ impl std::fmt::Display for Error {
             Self::Custom(e) => write!(f, "{}", e),
             Self::Io(e) => write!(f, "{}", e),
             Self::Rocket(e) => write!(f, "{}", e),
-            Self::ArgParse(e) => write!(f, "{}", e)
+            Self::ArgParse(e) => write!(f, "{}", e),
         }
     }
 }
