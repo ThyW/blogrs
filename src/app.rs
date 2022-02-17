@@ -1,3 +1,6 @@
+use rocket::fs::{FileServer, Options};
+use rocket_dyn_templates::Template;
+
 use crate::blog::BlogHandler;
 use crate::commands;
 use crate::error::BlogrsResult;
@@ -20,7 +23,7 @@ impl Default for AppConfig {
             blog_dir: Some("blogs/".to_string()),
             home_route: Some("/".to_string()),
             blog_route: Some("/blogs".to_string()),
-            blog_index: Some("blog_index.html.tera".to_string()),
+            blog_index: Some("blog_index".to_string()),
         }
     }
 }
@@ -67,12 +70,12 @@ impl App {
     }
 
     pub async fn run(&self) -> BlogrsResult {
-        let rocket = rocket::build();
+        let mut rocket = rocket::build();
         let cfg = self.config.clone();
         if cfg.home_route.is_some() && cfg.home_page.is_some() {
-            let (route, page) = (cfg.home_page.unwrap(), cfg.home_route.unwrap());
-            let ih = IndexHandler::new(route.clone(), page);
-            rocket.mount(route, ih);
+            let (page, route) = (cfg.home_page.unwrap(), cfg.home_route.unwrap());
+            let ih = IndexHandler::new(page, route.clone());
+            rocket = rocket.mount(route, ih);
         }
 
         if cfg.blog_dir.is_some() && cfg.blog_route.is_some() && cfg.blog_index.is_some() {
@@ -82,8 +85,15 @@ impl App {
                 cfg.blog_index.unwrap(),
             );
             let index = Cow::from(index);
-            let _bh = BlogHandler::new(route.clone(), dir, index);
+            let bh = BlogHandler::new(dir.clone(), index);
+            rocket = rocket.mount(route.clone(), bh);
+
+            rocket = rocket.mount(route, FileServer::new(dir, Options::default()))
         }
+
+        rocket = rocket.attach(Template::fairing());
+
+        rocket.launch().await?;
 
         Ok(())
     }
