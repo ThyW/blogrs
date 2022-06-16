@@ -1,0 +1,43 @@
+[development]
+address = "https://google.com"
+keep_alive = 10
+log = "off"
+port = 880
+read_timeout = 5
+secret_key = "my super secret key"
+worker_count = 20
+write_timeout = 5
+
+[development.limits]
+
+[production]
+address = "http://localhost.com"
+keep_alive = 10
+log = "normal"
+port = 53
+read_timeout = 5
+secret_key = ""
+worker_count = 4
+write_timeout = 10
+
+[production.limits]
+json = 5
+msgpack = 20
+
+[staging]
+address = "https://something.com"
+keep_alive = 10
+log = "normal"
+port = 8000
+read_timeout = 5
+secret_key = ""
+worker_count = 4
+write_timeout = 10
+
+[staging.limits]
+bytes = 8192
+file = 1048576
+forms = 32768
+json = 1048576
+msgpack = 1048576
+string = 8192

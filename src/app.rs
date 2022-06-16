@@ -7,8 +7,16 @@ use crate::error::BlogrsResult;
 use crate::index::IndexHandler;
 use std::borrow::Cow;
 
+fn help_message() {
+    println!("blogrs: a tool to quickly deploy your blogs to the internet.\n");
+    println!("Commands:");
+    println!("-h or --help\t\tShow this help message.");
+    println!("-h or --help\t\tShow this help message.");
+}
+
 #[derive(Debug, Clone)]
 pub struct AppConfig {
+    help: bool,
     home_page: Option<String>,
     blog_dir: Option<String>,
     home_route: Option<String>,
@@ -19,6 +27,7 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
+            help: false,
             home_page: Some("index.html".to_string()),
             blog_dir: Some("blogs/".to_string()),
             home_route: Some("/".to_string()),
@@ -70,6 +79,10 @@ impl App {
     }
 
     pub async fn run(&self) -> BlogrsResult {
+        if self.config.help {
+            help_message();
+            return Ok(())
+        }
         let mut rocket = rocket::build();
         let cfg = self.config.clone();
         if cfg.home_route.is_some() && cfg.home_page.is_some() {
